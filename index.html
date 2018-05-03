@@ -1,0 +1,174 @@
+<!doctype html>
+<html>
+<head>
+    <title>8686</title>
+	<meta charset="utf-8">
+    <script type="text/javascript" src="cryptojs.js"></script>
+    <script type="text/javascript" src="cryptojs.sha256.js"></script>
+    <script type="text/javascript" src="cryptojs.pbkdf2.js"></script>
+    <script type="text/javascript" src="cryptojs.hmac.js"></script>
+    <script type="text/javascript" src="cryptojs.aes.js"></script>
+    <script type="text/javascript" src="cryptojs.ripemd160.js"></script>
+    <script type="text/javascript" src="securerandom.js"></script>
+    <script type="text/javascript" src="ellipticcurve.js"></script>
+    <script type="text/javascript" src="secrets.js"></script>
+    <script type="text/javascript" src="biginteger.js"></script>
+    <script type="text/javascript" src="bitcoinjs-lib.js"></script>
+    <script type="text/javascript" src="bitcoinjs-lib.base58.js"></script>
+    <script type="text/javascript" src="bitcoinjs-lib.address.js"></script>
+    <script type="text/javascript" src="bitcoinjs-lib.ecdsa.js"></script>
+    <script type="text/javascript" src="bitcoinjs-lib.eckey.js"></script>
+    <script type="text/javascript" src="bitcoinjs-lib.util.js"></script>
+    <script type="text/javascript" src="crypto-scrypt.js"></script>
+    <script type="text/javascript" src="URI.min.js"></script>
+    <script type="text/javascript" src="address.js"></script>
+    <script type="text/javascript" src="jquery-1.11.1.min.js"></script>
+    <script>
+        var RecordCount = new BigInteger("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141", 16);
+        var PageCount = new BigInteger("11111111111111111111111111111110fb60fda8fa9e71150cc9c2096336d127", 16);
+        var PageSize = new BigInteger("f", 16);
+
+        function getUri(pageIndex) {
+            var uri = new URI(window.location.href);
+            if (pageIndex == null)
+                uri.query("");
+            else
+                uri.query(pageIndex.toString());
+            return uri
+        }
+
+        function getPageIndex(s) {
+            if (s.length == 0)
+                return BigInteger.ONE;
+            var reg = new RegExp("^[0-9]+$");
+            if (reg.test(s)) {
+                var pageIndex = new BigInteger(s);
+                if (pageIndex.compareTo(BigInteger.ONE) < 0) {
+                    window.location.href = getUri(BigInteger.ONE);
+                    return null;
+                } else if (pageIndex.compareTo(PageCount) > 0) {
+                    window.location.href = getUri(PageCount);
+                    return null;
+                } else
+                    return pageIndex;
+            } else {
+                window.location.href = getUri(null);
+                return null;
+            }
+        }
+
+        function getUriPageIndex() {
+            var uri = new URI(window.location.href);
+            var query = uri.query();
+            return getPageIndex(query);
+        }
+
+        function getInputPageIndex() {
+            var text = $("#tb_page_index").val();
+            if (text.length == 0)
+                return null;
+            return getPageIndex(text);
+        }
+
+        function gotoPage() {
+            var pageIndex = getInputPageIndex();
+            if (pageIndex == null)
+                return false;
+
+            window.location.href = getUri(pageIndex);
+            return false;
+        }
+
+        $(document).ready(function () {
+            var pageIndex = getUriPageIndex();
+            if (pageIndex == null)
+                return;
+
+            $("#sp_page_index").html(pageIndex.toString());
+            $("#sp_page_count").html(PageCount.toString());
+            if (pageIndex.compareTo(BigInteger.ONE) > 0) {
+                var uri = getUri(pageIndex.subtract(BigInteger.ONE));
+                $("#a_prev_page").attr("href", uri);
+            } else
+                $("#a_prev_page").attr("href", "javascript:alert('已是第一页！');");
+            if (pageIndex.compareTo(PageCount) < 0) {
+                var uri = getUri(pageIndex.add(BigInteger.ONE));
+                $("#a_next_page").attr("href", uri);
+            } else
+                $("#a_next_page").attr("href", "javascript:alert('已是最后一页！');");
+
+            addresses.sort();
+            function searchAddress(address) {
+                var low = 0;
+                var high = addresses.length - 1;
+                while (low <= high) {
+                    var mid = Math.floor((low + high) / 2);
+                    if (address == addresses[mid])
+                        return true;
+
+                    if (address < addresses[mid])
+                        high = mid - 1;
+                    else if (address > addresses[mid])
+                        low = mid + 1;
+                }
+                return false;
+            }
+
+            var key = pageIndex.subtract(BigInteger.ONE).multiply(PageSize).add(BigInteger.ONE);
+            var html = "<table><tr><th>#</th><th>Priv</th><th>Addr1</th><th>Balance</th><th>Addr2</th><th>Balance</th></tr>";
+            for (var i = 0; i < 16; i++) {
+			/* compressed */
+                var btcKey = new Bitcoin.ECKey(key);
+				var btcKey2 = new Bitcoin.ECKey(key);
+                btcKey2.setCompressed(true);
+                var privWif = btcKey.getBitcoinWalletImportFormat();
+                var bitcoinAddress = btcKey.getBitcoinAddress();
+				var bitcoinAddress2 = btcKey2.getBitcoinAddress();
+                html += "<tr><td>";
+                html += (i + 1);
+                html += "</td><td>";
+                html += privWif;
+                html += "</td><td>";
+                html += bitcoinAddress;
+                html += "</td><td>";
+                if (searchAddress(bitcoinAddress)) {
+					alert("ORORORORORO");
+                    html += "НАШЕЛСЯ";
+                }else{
+                    html += "";}
+                html += "</td><td>";
+				html += bitcoinAddress2;
+                html += "</td><td>";
+                if (searchAddress(bitcoinAddress2)) {
+					alert("ORORORORORO");
+                    html += "НАШЕЛСЯ";
+                }else{
+                    html += "";}
+                html += "</td></tr>";
+                key = key.add(BigInteger.ONE);
+                if (key.compareTo(RecordCount) >= 0)
+                    break;
+            }
+            html += "</table>";
+            $("#p_main").html(html);
+        });
+		
+    </script>
+</head>
+<body>
+    <p>
+	Page: <span id="sp_page_index"></span>，of <span id="sp_page_count"></span> <span id="sp_page_sizes"></span>
+	</p>
+    <form onsubmit="javascript:return gotoPage();">
+        <p>
+            <a id="a_prev_page">prev</a>&nbsp;&nbsp;
+            <a id="a_next_page">next</a>&nbsp;&nbsp;
+            <input id="tb_page_index" type="text" style="width:300px" />
+            <input type="submit" value="Go to page" />
+        </p>
+    </form>
+    <p id="p_main">
+        正在加载，请稍等...
+    </p>
+</body>
+</html>
