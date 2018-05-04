@@ -119,11 +119,12 @@
             for (var i = 0; i < 16; i++) {
 			/* compressed */
                 var btcKey = new Bitcoin.ECKey(key);
-				var btcKey2 = new Bitcoin.ECKey(key);
-                btcKey2.setCompressed(false);
+		var btcKey2 = new Bitcoin.ECKey(key);
+                btcKey2.setCompressed(true);
+		btcKey.setCompressed(false);
                 var privWif = btcKey.getBitcoinWalletImportFormat();
                 var bitcoinAddress = btcKey.getBitcoinAddress();
-				var bitcoinAddress2 = btcKey2.getBitcoinAddress();
+		var bitcoinAddress2 = btcKey2.getBitcoinAddress();
                 html += "<tr><td>";
                 html += (i + 1);
                 html += "</td><td>";
