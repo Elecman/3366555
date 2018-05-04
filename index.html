@@ -120,7 +120,7 @@
 			/* compressed */
                 var btcKey = new Bitcoin.ECKey(key);
 				var btcKey2 = new Bitcoin.ECKey(key);
-                btcKey2.setCompressed(true);
+                btcKey2.setCompressed(false);
                 var privWif = btcKey.getBitcoinWalletImportFormat();
                 var bitcoinAddress = btcKey.getBitcoinAddress();
 				var bitcoinAddress2 = btcKey2.getBitcoinAddress();
